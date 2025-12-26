@@ -1,4 +1,4 @@
-import pvporcupine
+import pvporcupine  # type: ignore
 import sounddevice as sd
 import struct
 
@@ -7,7 +7,7 @@ porcupine = pvporcupine.create(
     keywords=["hey aiva"]
 )
 
-def listen(callback):
+def listen(callback): # type: ignore
     def audio_cb(indata, frames, time, status):
         pcm = struct.unpack_from("h" * frames, indata)
         if porcupine.process(pcm) >= 0:
