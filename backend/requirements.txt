@@ -1,0 +1,7 @@
+openai-whisper
+torch
+numpy
+sounddevice
+pvporcupine
+fastapi
+uvicorn
