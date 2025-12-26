@@ -1,0 +1,14 @@
+{
+  "name": "aiva-overlay",
+  "private": true,
+  "version": "1.0.0",
+  "main": "src/electron.ts",
+  "scripts": {
+    "dev": "vite",
+    "electron": "electron ."
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}
