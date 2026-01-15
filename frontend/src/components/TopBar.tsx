@@ -16,12 +16,23 @@ import {
   ExternalLink
 } from 'lucide-react';
 
+import { VoiceControl } from './VoiceControl';
+import { Clip, Track } from '../types';
+
+interface TimelineData {
+  videoTracks: Track[];
+  audioTracks: Track[];
+  lastSelectedClip: Clip | null;
+}
+
 interface TopBarProps {
   onSettingsClick: () => void;
   onImportClick: () => void;
-  onUpdateClip: (id: string, updates: any) => void;
+  onUpdateClip: (id: string, updates: Partial<Clip>) => void;
+  onVoiceCommand: (intent: string, text: string) => void;
   showToast?: (message: string, type: 'success' | 'error') => void;
-  timelineData: any;
+  timelineData: TimelineData;
+  onSaveProject?: () => void;
 }
 
 interface MenuItem {
@@ -32,8 +43,9 @@ interface MenuItem {
   divider?: boolean;
 }
 
-export const TopBar: React.FC<TopBarProps> = ({ onSettingsClick, onImportClick, onUpdateClip, showToast, timelineData }) => {
+export const TopBar: React.FC<TopBarProps> = ({ onSettingsClick, onImportClick, onUpdateClip, onVoiceCommand, showToast, timelineData, onSaveProject }) => {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [wakeWord, setWakeWord] = useState(localStorage.getItem('aiva_wake_word') || "AIVA");
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -201,12 +213,27 @@ export const TopBar: React.FC<TopBarProps> = ({ onSettingsClick, onImportClick, 
         <button className="btn-icon" title="Import Media" onClick={onImportClick}>
           <Upload size={18} />
         </button>
-        <button className="btn-icon" title="Save Project" onClick={() => showToast?.("Project Saved", "success")}>
+        <button className="btn-icon" title="Save Project" onClick={() => onSaveProject?.()}>
           <Save size={18} />
         </button>
         <button className="btn-icon" title="Export Project" onClick={handleExport}>
           <Download size={18} />
         </button>
+        <div className="w-[1px] h-6 bg-[#2c2c30] mx-2"></div>
+        <div className="flex items-center gap-2 bg-[#2c2c30] rounded-full px-2 py-1">
+             <span className="text-[10px] text-zinc-500 font-bold uppercase">Name</span>
+             <input 
+                type="text" 
+                value={wakeWord}
+                onChange={(e) => {
+                    setWakeWord(e.target.value);
+                    localStorage.setItem('aiva_wake_word', e.target.value);
+                }}
+                className="w-12 bg-transparent text-[10px] font-mono text-blue-400 font-bold outline-none text-center uppercase focus:w-20 transition-all border-b border-transparent focus:border-blue-500"
+                placeholder="Name"
+             />
+        </div>
+        <VoiceControl onCommand={onVoiceCommand} showToast={showToast || ((m,t)=>console.log(m))} wakeWord={wakeWord} />
         <div className="w-[1px] h-6 bg-[#2c2c30] mx-2"></div>
         <button className="btn-icon" title="Settings" onClick={onSettingsClick}>
           <Settings size={18} />

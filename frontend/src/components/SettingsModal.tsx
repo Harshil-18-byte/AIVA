@@ -61,7 +61,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showToast
     onClose();
   };
 
-  const updateSetting = (key: keyof typeof DEFAULT_SETTINGS, value: any) => {
+  const updateSetting = (key: keyof typeof DEFAULT_SETTINGS, value: (typeof DEFAULT_SETTINGS)[keyof typeof DEFAULT_SETTINGS]) => {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
 
@@ -377,8 +377,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showToast
                       </div>
                       <input 
                         type="checkbox" 
-                        checked={(settings as any).aiVoiceIsolation}
-                        onChange={(e) => updateSetting('aiVoiceIsolation' as any, e.target.checked)}
+                        checked={settings.aiVoiceIsolation}
+                        onChange={(e) => updateSetting('aiVoiceIsolation', e.target.checked)}
                         className="accent-[#3b82f6]" 
                       />
                     </div>
@@ -390,8 +390,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showToast
                       </div>
                       <input 
                         type="checkbox" 
-                        checked={(settings as any).aiSceneDetect}
-                        onChange={(e) => updateSetting('aiSceneDetect' as any, e.target.checked)}
+                        checked={settings.aiSceneDetect}
+                        onChange={(e) => updateSetting('aiSceneDetect', e.target.checked)}
                         className="accent-[#3b82f6]" 
                       />
                     </div>
@@ -403,8 +403,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showToast
                       </div>
                       <input 
                         type="checkbox" 
-                        checked={(settings as any).aiGenerativeFill}
-                        onChange={(e) => updateSetting('aiGenerativeFill' as any, e.target.checked)}
+                        checked={settings.aiGenerativeFill}
+                        onChange={(e) => updateSetting('aiGenerativeFill', e.target.checked)}
                         className="accent-[#3b82f6]" 
                       />
                     </div>

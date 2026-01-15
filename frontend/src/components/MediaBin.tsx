@@ -1,29 +1,20 @@
 import React, { useState } from 'react';
-import { Film, Music, Image as ImageIcon, Search, Grip, List, Zap, Layers, Sparkles, Plus } from 'lucide-react';
+import { Film, Music, Image as ImageIcon, Search, Grip, List, Zap, Layers, Sparkles, Plus, Trash2 } from 'lucide-react';
 
-interface Asset {
-  id: string;
-  name: string;
-  type: 'video' | 'audio' | 'image' | 'transition' | 'effect';
-  path: string;
-  duration?: string;
-  resolution?: string;
-  color?: string;
-  scene?: string;
-  take?: string;
-  reel?: string;
-}
+import { Asset } from '../types';
 
 interface MediaBinProps {
   assets: Asset[];
   setSelectedAssetId: (id: string | null) => void;
   setSelectedClipId: (id: string | null) => void;
   onUpdateAsset: (id: string, updates: Partial<Asset>) => void;
+  onDeleteAsset?: (id: string) => void;
   showToast?: (message: string, type: 'success' | 'error') => void;
   fullView?: boolean;
 }
 
-export const MediaBin: React.FC<MediaBinProps> = ({ assets, setSelectedAssetId, setSelectedClipId, onUpdateAsset, showToast, fullView }) => {
+export const MediaBin = React.memo((props: MediaBinProps) => {
+  const { assets, setSelectedAssetId, setSelectedClipId, onUpdateAsset, onDeleteAsset, showToast, fullView } = props;
   const [activeTab, setActiveTab] = useState<'project' | 'transitions' | 'effects'>('project');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
@@ -114,10 +105,10 @@ export const MediaBin: React.FC<MediaBinProps> = ({ assets, setSelectedAssetId, 
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="h-8 border-b border-[#1f1f23] flex items-center px-4 gap-6 bg-[#0c0c0e]/50">
              <div className="flex gap-4">
-                {['project', 'transitions', 'effects'].map(t => (
+                 {(['project', 'transitions', 'effects'] as const).map(t => (
                    <button 
                      key={t}
-                     onClick={() => setActiveTab(t as any)}
+                     onClick={() => setActiveTab(t)}
                      className={`text-[8px] uppercase font-black tracking-widest transition-all ${
                         activeTab === t ? 'text-blue-400' : 'text-zinc-600 hover:text-zinc-400'
                      }`}
@@ -136,6 +127,20 @@ export const MediaBin: React.FC<MediaBinProps> = ({ assets, setSelectedAssetId, 
                 />
              </div>
              <div className="flex gap-2">
+                <button 
+                    onClick={() => {
+                        if (activeAssetId && onDeleteAsset) {
+                           onDeleteAsset(activeAssetId);
+                           setActiveAssetId(null);
+                        }
+                    }} 
+                    className={`p-1 ${activeAssetId ? 'text-red-500 hover:bg-red-500/10' : 'text-zinc-700 cursor-not-allowed'}`}
+                    disabled={!activeAssetId}
+                    title="Delete Selected Asset"
+                >
+                    <Trash2 size={12} />
+                </button>
+                <div className="w-[1px] h-3 bg-[#2c2c30] self-center"></div>
                 <button onClick={() => setViewMode('grid')} className={`p-1 ${viewMode === 'grid' ? 'text-white' : 'text-zinc-600'}`}><Grip size={12} /></button>
                 <button onClick={() => setViewMode('list')} className={`p-1 ${viewMode === 'list' ? 'text-white' : 'text-zinc-600'}`}><List size={12} /></button>
              </div>
@@ -208,8 +213,8 @@ export const MediaBin: React.FC<MediaBinProps> = ({ assets, setSelectedAssetId, 
                         <p className="text-[7px] font-black text-zinc-600 uppercase tracking-tighter">{m.label}</p>
                         <input 
                           type="text" 
-                          value={(assets.find(a => a.id === activeAssetId) as any)?.[m.key] || ''}
-                          onChange={(e) => activeAssetId && onUpdateAsset(activeAssetId, { [m.key]: e.target.value })}
+                          value={(assets.find(a => a.id === activeAssetId) as Asset | undefined)?.[m.key as keyof Asset] || ''}
+                          onChange={(e) => activeAssetId && onUpdateAsset(activeAssetId, { [m.key]: e.target.value } as Partial<Asset>)}
                           placeholder={m.def}
                           className="w-full bg-black/40 border-[#1f1f23] text-[9px] text-white p-1.5 rounded font-mono outline-none focus:border-blue-500/50"
                         />
@@ -249,4 +254,4 @@ export const MediaBin: React.FC<MediaBinProps> = ({ assets, setSelectedAssetId, 
       </div>
     </div>
   );
-};
+});

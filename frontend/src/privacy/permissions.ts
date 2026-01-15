@@ -20,6 +20,6 @@ export function loadPermissions() {
   );
 }
 
-export function savePermissions(p: any) {
+export function savePermissions(p: Record<PermissionKey, boolean>) {
   localStorage.setItem("aiva_permissions", JSON.stringify(p));
 }

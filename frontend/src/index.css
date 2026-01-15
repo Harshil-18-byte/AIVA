@@ -149,3 +149,27 @@ input:focus {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #3f3f46;
 }
+@keyframes wipe-right {
+    0% { clip-path: inset(0 100% 0 0); }
+    100% { clip-path: inset(0 0 0 0); }
+}
+
+@keyframes wipe-left {
+    0% { clip-path: inset(0 0 0 100%); }
+    100% { clip-path: inset(0 0 0 0); }
+}
+
+@keyframes fade-zoom {
+    0% { opacity: 0; transform: scale(0.9); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes push {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(0); }
+}
+
+.transition-active-wipe-right { animation: wipe-right 0.5s ease-out forwards; }
+.transition-active-wipe-left { animation: wipe-left 0.5s ease-out forwards; }
+.transition-active-cross-dissolve { animation: fade-zoom 0.5s ease-out forwards; }
+.transition-active-push { animation: push 0.5s ease-out forwards; }

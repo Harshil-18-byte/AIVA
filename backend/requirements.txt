@@ -9,3 +9,5 @@ uvicorn
 opencv-python
 mss
 pytesseract
+librosa
+scipy

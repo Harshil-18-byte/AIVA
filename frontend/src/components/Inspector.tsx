@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Sliders, Wand2, Activity, VolumeX, FileText, Plus, Shield, Sparkles, 
-  Palette, Music, Video, Target, Filter, Volume2, Move, Scissors
+  Palette, Music, Video, Target, Filter, Volume2, Move, Scissors, Loader2, ArrowRight
 } from 'lucide-react';
 
 import { Clip } from '../types';
@@ -36,9 +36,9 @@ export const Inspector: React.FC<InspectorProps> = ({ selectedClip, onUpdateClip
               name: `AI_${selectedClip.name}`
           });
           showToast?.(`Success: Applied ${action}`, 'success');
-      } else if (data.status === 'success' && data.log && action === 'scene_cut') {
-          // Parse FFmpeg scdet logs: "[scdet @ ...] t: 0.500"
-          const times = [...data.log.matchAll(/t:\s*([\d.]+)/g)].map(m => parseFloat(m[1]) * 100);
+      } else if (data.status === 'success' && data.scenes && action === 'scene_detect') {
+          // New backend returns 'scenes' array with objects { time: float, frame: int }
+          const times = data.scenes.map((s: { time: number }) => Math.round(s.time * 100)); // Convert seconds to pixels (100px/sec)
           onAddMarkers?.(times);
           showToast?.(`Detected ${times.length} scene changes`, 'success');
       } else {
@@ -51,18 +51,48 @@ export const Inspector: React.FC<InspectorProps> = ({ selectedClip, onUpdateClip
     }
   };
 
+  const applyVoiceEffect = async (effect: string) => {
+     if (!selectedClip) return;
+     setIsProcessing('voice_fx');
+     try {
+       const res = await fetch('http://localhost:8000/apply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+             action: 'voice_changer', 
+             file_path: selectedClip.path,
+             context: { effect } 
+          })
+       });
+       const data = await res.json();
+       if (data.status === 'success' && data.output_file) {
+          onUpdateClip(selectedClip.id, { 
+              path: data.output_file,
+              name: `FX_${effect}_${selectedClip.name}`
+          });
+          showToast?.(`Voice changed to ${effect}`, 'success');
+       } else {
+           showToast?.("Effect failed", 'error');
+       }
+     } catch (e) {
+         showToast?.("Effect error", 'error');
+     } finally {
+         setIsProcessing(null);
+     }
+  };
+
   return (
     <div className="panel w-[320px] h-full bg-[#0c0c0e] flex flex-col border-l border-[#1f1f23]">
       <div className="h-10 border-b border-[#1f1f23] flex items-center justify-around bg-[#141417]">
-        {[
+        {([
           { id: 'properties', icon: <Sliders size={14} />, label: 'Ins' },
           { id: 'ai', icon: <Wand2 size={14} />, label: 'AI' },
           { id: 'color', icon: <Palette size={14} />, label: 'Col' },
           { id: 'audio', icon: <Music size={14} />, label: 'Aud' }
-        ].map(tab => (
+        ] as const).map(tab => (
           <button 
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
+            onClick={() => setActiveTab(tab.id)}
             className={`flex-1 h-full flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-tighter ${activeTab === tab.id ? 'text-white border-b-2 border-blue-600 bg-white/5' : 'text-zinc-600 hover:text-white'}`}
           >
             {tab.icon}
@@ -134,21 +164,21 @@ export const Inspector: React.FC<InspectorProps> = ({ selectedClip, onUpdateClip
                             <span className="text-[10px] font-black uppercase tracking-widest">Primary Wheels</span>
                          </div>
                          <div className="grid grid-cols-1 gap-6">
-                            {[
+                            {([
                                { id: 'temperature', label: 'Temp', icon: <Target size={10} />, min: -100, max: 100, def: 0 },
                                { id: 'tint', label: 'Tint', icon: <Target size={10} />, min: -100, max: 100, def: 0 },
                                { id: 'saturation', label: 'Sat', icon: <Target size={10} />, min: 0, max: 200, def: 100 },
                                { id: 'contrast', label: 'Cont', icon: <Target size={10} />, min: 0, max: 200, def: 100 }
-                            ].map(p => (
+                            ] as const).map(p => (
                                <div key={p.id} className="space-y-2">
                                   <div className="flex justify-between text-[8px] font-black uppercase text-zinc-500">
                                      <span>{p.label}</span>
-                                     <span>{(selectedClip as any)[p.id] ?? p.def}</span>
+                                     <span>{selectedClip[p.id] ?? p.def}</span>
                                   </div>
                                   <input 
                                     type="range" min={p.min} max={p.max} 
                                     className="w-full h-1 bg-zinc-900 rounded appearance-none cursor-pointer accent-orange-600"
-                                    value={(selectedClip as any)[p.id] ?? p.def}
+                                    value={selectedClip[p.id] ?? p.def}
                                     onChange={(e) => onUpdateClip(selectedClip.id, { [p.id]: parseInt(e.target.value) })}
                                   />
                                </div>
@@ -159,16 +189,16 @@ export const Inspector: React.FC<InspectorProps> = ({ selectedClip, onUpdateClip
                       <div className="pt-6 border-t border-[#1f1f23] space-y-4">
                          <span className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Luma / Chrominance</span>
                          <div className="space-y-4">
-                            {['lift', 'gamma', 'gain'].map(mode => (
+                            {(['lift', 'gamma', 'gain'] as const).map(mode => (
                                <div key={mode} className="space-y-2">
                                   <div className="flex justify-between text-[8px] font-black uppercase text-zinc-500">
                                      <span>{mode}</span>
-                                     <span>{((selectedClip as any)[mode]?.g ?? 1).toFixed(2)}</span>
+                                     <span>{(selectedClip[mode]?.g ?? 1).toFixed(2)}</span>
                                   </div>
                                   <input 
                                     type="range" min="0" max="200"
                                     className="w-full h-1 bg-zinc-900 rounded appearance-none cursor-pointer accent-orange-600"
-                                    value={((selectedClip as any)[mode]?.g ?? 1) * 100}
+                                    value={(selectedClip[mode]?.g ?? 1) * 100}
                                     onChange={(e) => {
                                         const val = parseInt(e.target.value) / 100;
                                         onUpdateClip(selectedClip.id, { [mode]: { r: val, g: val, b: val } });
@@ -182,34 +212,74 @@ export const Inspector: React.FC<InspectorProps> = ({ selectedClip, onUpdateClip
                 )}
 
                 {activeTab === 'ai' && (
-                  <div className="space-y-3 animate-in fade-in">
-                    {[
-                      { action: 'magic_mask', title: 'Magic Mask', desc: 'AI Object Isolation', icon: <Shield size={14} />, color: 'purple' },
-                      { action: 'super_scale', title: 'Super Scale', desc: 'Hardware Upscaling', icon: <Plus size={14} />, color: 'blue' },
-                      { action: 'smart_relight', title: 'Smart Re-light', desc: '3D Virtual Lighting', icon: <Sparkles size={14} />, color: 'orange' },
-                      { action: 'face_refinement', title: 'Face Refine', desc: 'Auto Skin Retouching', icon: <Target size={14} />, color: 'rose' },
-                      { action: 'voice_isolation', title: 'Voice Isolation', desc: 'Dialogue Leveler', icon: <Volume2 size={14} />, color: 'green' },
-                      { action: 'scene_cut', title: 'Scene Detect', desc: 'Cut at scene changes', icon: <Scissors size={14} />, color: 'cyan' }
-                    ].map(tool => (
-                      <div 
-                        key={tool.action} 
-                        onClick={() => !isProcessing && runAI(tool.action)} 
-                        className={`group border border-[#1f1f23] bg-[#141417]/30 p-3 rounded-lg hover:border-blue-500/30 transition-all cursor-pointer relative overflow-hidden ${isProcessing === tool.action ? 'opacity-50' : ''}`}
-                      >
-                        {isProcessing === tool.action && (
-                            <div className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-500 animate-[loading_2s_infinite]"></div>
-                        )}
-                        <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded bg-zinc-800 text-${tool.color}-500 group-hover:bg-${tool.color}-500 group-hover:text-white transition-all`}>
-                                {tool.icon}
-                            </div>
-                            <div className="flex-1">
-                                <h4 className="text-[10px] font-black uppercase text-white">{tool.title}</h4>
-                                <p className="text-[8px] text-zinc-600 font-medium">{tool.desc}</p>
-                            </div>
+                  <div className="space-y-4 animate-in fade-in">
+                    <div className="px-1 py-2">
+                        <span className="text-[10px] font-black uppercase text-zinc-500 tracking-widest block mb-3">Neural Engine Tools</span>
+                        <div className="grid grid-cols-1 gap-2">
+                            {[
+                            { id: 'magic_mask', label: 'Magic Mask', sub: 'Object Isolation', icon: <Shield size={16} />, color: 'text-purple-400', bg: 'hover:bg-purple-500/10' },
+                            { id: 'super_scale', label: 'Super Scale', sub: '2x / 4x Upscaling', icon: <Plus size={16} />, color: 'text-blue-400', bg: 'hover:bg-blue-500/10' },
+                            { id: 'smart_relight', label: 'Smart Re-light', sub: 'Virtual Studio', icon: <Sparkles size={16} />, color: 'text-orange-400', bg: 'hover:bg-orange-500/10' },
+                            { id: 'voice_isolation', label: 'Voice Isolation', sub: 'De-noise Audio', icon: <Volume2 size={16} />, color: 'text-green-400', bg: 'hover:bg-green-500/10' },
+                            { id: 'remove_silence', label: 'Silence Removal', sub: 'Trim Pauses', icon: <Scissors size={16} />, color: 'text-red-400', bg: 'hover:bg-red-500/10' },
+                            { id: 'scene_detect', label: 'Scene Detect', sub: 'Auto Cut Points', icon: <Scissors size={16} />, color: 'text-cyan-400', bg: 'hover:bg-cyan-500/10' },
+                            ].map(tool => (
+                            <button 
+                                key={tool.id}
+                                onClick={() => !isProcessing && runAI(tool.id)}
+                                disabled={isProcessing !== null}
+                                className={`w-full flex items-center gap-4 p-3 rounded-xl border border-[#2c2c30] bg-[#141417] transition-all group ${tool.bg} ${isProcessing === tool.id ? 'border-blue-500 ring-1 ring-blue-500/50' : 'hover:border-white/20'}`}
+                            >
+                                <div className={`p-2 rounded-lg bg-[#0c0c0e] ${tool.color} group-hover:scale-110 transition-transform shadow-lg`}>
+                                    {isProcessing === tool.id ? <Loader2 size={16} className="animate-spin text-white" /> : tool.icon}
+                                </div>
+                                <div className="flex-1 text-left">
+                                    <h4 className="text-xs font-bold text-zinc-200 group-hover:text-white transition-colors">{tool.label}</h4>
+                                    <p className="text-[9px] font-medium text-zinc-500 group-hover:text-zinc-400">{isProcessing === tool.id ? 'Processing...' : tool.sub}</p>
+                                </div>
+                                <div className="opacity-0 group-hover:opacity-100 transition-opacity -mr-2">
+                                    <ArrowRight size={14} className="text-zinc-500" />
+                                </div>
+                            </button>
+                            ))}
+
+                            <button
+                                onClick={async () => {
+                                    if (!selectedClip || isProcessing) return;
+                                    setIsProcessing("transcribe");
+                                    showToast?.("Starting transcription...", "success");
+                                    try {
+                                            const res = await fetch('http://localhost:8000/ai/transcribe', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ file_path: selectedClip.path })
+                                            });
+                                            const data = await res.json();
+                                            if (data.status === 'success') {
+                                                showToast?.("Captions generated (see console)", 'success');
+                                                console.log("TRANSCRIPT:", data.transcription);
+                                            } else {
+                                                showToast?.("Transcription Failed: " + data.message, 'error');
+                                            }
+                                    } catch(e) { showToast?.("Transcription Error", "error"); }
+                                    setIsProcessing(null);
+                                }}
+                                disabled={isProcessing !== null}
+                                className={`w-full flex items-center gap-4 p-3 rounded-xl border border-[#2c2c30] bg-[#141417] transition-all group hover:bg-rose-500/10 hover:border-white/20 ${isProcessing === 'transcribe' ? 'border-blue-500' : ''}`}
+                            >
+                                <div className={`p-2 rounded-lg bg-[#0c0c0e] text-rose-400 group-hover:scale-110 transition-transform shadow-lg`}>
+                                    {isProcessing === 'transcribe' ? <Loader2 size={16} className="animate-spin text-white" /> : <FileText size={16} />}
+                                </div>
+                                <div className="flex-1 text-left">
+                                    <h4 className="text-xs font-bold text-zinc-200 group-hover:text-white transition-colors">Transcribe</h4>
+                                    <p className="text-[9px] font-medium text-zinc-500 group-hover:text-zinc-400">{isProcessing === 'transcribe' ? 'Analyzing Audio...' : 'Generate Captions'}</p>
+                                </div>
+                                <div className="opacity-0 group-hover:opacity-100 transition-opacity -mr-2">
+                                    <ArrowRight size={14} className="text-zinc-500" />
+                                </div>
+                            </button>
                         </div>
-                      </div>
-                    ))}
+                    </div>
                   </div>
                 )}
 
@@ -242,6 +312,17 @@ export const Inspector: React.FC<InspectorProps> = ({ selectedClip, onUpdateClip
                                AI Loudness Leveling
                              </button>
                           </div>
+                          
+                          <div className="pt-4 border-t border-[#1f1f23] space-y-4">
+                             <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Voice Changer Effects</p>
+                             <div className="grid grid-cols-2 gap-2">
+                                {['chipmunk', 'monster', 'robot', 'echo', 'alien'].map(fx => (
+                                    <button key={fx} onClick={() => applyVoiceEffect(fx)} className="px-3 py-2 bg-zinc-900 border border-[#1f1f23] rounded hover:border-blue-500/50 hover:bg-zinc-800 transition-all text-[9px] font-black uppercase text-zinc-400 hover:text-white">
+                                        {fx}
+                                    </button>
+                                ))}
+                             </div>
+                          </div>
                        </div>
                     </div>
                   </div>
@@ -252,4 +333,3 @@ export const Inspector: React.FC<InspectorProps> = ({ selectedClip, onUpdateClip
     </div>
   );
 };
-

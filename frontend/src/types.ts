@@ -9,6 +9,10 @@ export interface Asset {
   scene?: string;
   take?: string;
   reel?: string;
+  lens?: string;
+  camera?: string;
+  codec?: string;
+  colorspace?: string;
 }
 
 export interface Clip {
