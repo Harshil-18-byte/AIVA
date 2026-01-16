@@ -11,7 +11,7 @@ project_root = os.path.dirname(current_dir)
 sys.path.append(project_root)
 
 if __name__ == "__main__":
-    print(f"Starting Antigravity Backend from: {project_root}")
+    print(f"Starting AIVA Backend from: {project_root}")
     # We must run this from the perspective of the root package
     # Change working directory to root to match imports
     os.chdir(project_root)

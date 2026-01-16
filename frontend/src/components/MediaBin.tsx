@@ -51,7 +51,7 @@ export const MediaBin = React.memo((props: MediaBinProps) => {
     if (activeTab === 'effects') return builtInEffects;
     
     // Project tab - filter by folder and search
-    let filtered = assets.filter(a => {
+    const filtered = assets.filter(a => {
       const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase());
       if (!matchesSearch) return false;
       

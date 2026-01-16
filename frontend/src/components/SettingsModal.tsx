@@ -33,29 +33,27 @@ const DEFAULT_SETTINGS = {
   snapToGrid: true,
   
   // Storage
-  cacheLocation: 'C:\\Users\\Antigravity\\Cache',
+  cacheLocation: 'C:\\Users\\AIVA\\Cache',
   proxyFormat: 'ProRes 422 Proxy',
   maxCacheSize: 50, // GB
 };
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showToast }) => {
   const [activeTab, setActiveTab] = useState('general');
-  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
-
-  // Load from LocalStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem('antigravity_settings');
+  const [settings, setSettings] = useState<typeof DEFAULT_SETTINGS>(() => {
+    const saved = localStorage.getItem('aiva_settings');
     if (saved) {
       try {
-        setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(saved) });
+        return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
       } catch (e) {
         console.error("Failed to parse settings", e);
       }
     }
-  }, []);
+    return DEFAULT_SETTINGS;
+  });
 
   const handleSave = () => {
-    localStorage.setItem('antigravity_settings', JSON.stringify(settings));
+    localStorage.setItem('aiva_settings', JSON.stringify(settings));
     // In a real app, this would also trigger a context update or IPC call
     showToast?.("Configuration Saved Successfully", 'success');
     onClose();
@@ -319,7 +317,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showToast
                     <div>
                       <h3 className="text-blue-400 text-sm font-bold mb-1">Local Processing Engine</h3>
                       <p className="text-xs text-[#a1a1aa] leading-relaxed">
-                        Antigravity uses local AI models (Whisper, FFmpeg) to process media. This ensures privacy but requires system resources. 
+                        AIVA uses local AI models (Whisper, FFmpeg) to process media. This ensures privacy but requires system resources. 
                         Performance depends on your CPU/GPU capabilities.
                       </p>
                     </div>

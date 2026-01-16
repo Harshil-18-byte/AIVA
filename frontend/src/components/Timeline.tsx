@@ -123,15 +123,15 @@ export const Timeline: React.FC<TimelineProps> = ({
       ...t, clips: t.clips.map(c => {
         if (c.id !== draggingClip.id) return c;
         if (!draggingClip.edge) {
-            let newX = initialClipState.start + deltaX;
+            const newX = initialClipState.start + deltaX;
             return { ...c, start: Math.max(0, newX) };
         } else if (draggingClip.edge === 'left') {
-            let newStart = initialClipState.start + deltaX;
-            let newWidth = initialClipState.width - deltaX;
+            const newStart = initialClipState.start + deltaX;
+            const newWidth = initialClipState.width - deltaX;
             if (newWidth < 1) return c;
             return { ...c, start: Math.max(0, newStart), width: newWidth };
         } else {
-            let newWidth = initialClipState.width + deltaX;
+            const newWidth = initialClipState.width + deltaX;
             return { ...c, width: Math.max(1, newWidth) };
         }
       })

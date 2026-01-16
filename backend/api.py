@@ -184,7 +184,7 @@ def browse_folder():
 @app.post("/system/clean_cache")
 def clean_cache(payload: dict):
     # Retrieve cache path from payload or default
-    cache_path = payload.get("cache_path", "C:/Users/Antigravity/Cache")
+    cache_path = payload.get("cache_path", "C:/Users/AIVA/Cache")
     try:
         if os.path.exists(cache_path):
             # In a real scenario, we would selectively delete.

@@ -86,27 +86,7 @@ export default function App() {
     };
   }, [isPlaying]);
 
-  useEffect(() => {
-    const fetchSuggestions = async () => {
-      const clip = getSelectedClip();
-      if (!clip) {
-        setSuggestions([]);
-        return;
-      }
-      try {
-        const resp = await fetch("http://localhost:8000/analyze", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ file_path: clip.path }),
-        });
-        const data = await resp.json();
-        setSuggestions(data.suggestions || []);
-      } catch (e) {
-        setSuggestions([]);
-      }
-    };
-    fetchSuggestions();
-  }, [selectedClipId, selectedAssetId]);
+
 
   const addVideoTrack = () => {
     setVideoTracks((prev) => [
@@ -169,6 +149,28 @@ export default function App() {
     }
     return null;
   };
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      const clip = getSelectedClip();
+      if (!clip) {
+        setSuggestions([]);
+        return;
+      }
+      try {
+        const resp = await fetch("http://localhost:8000/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ file_path: clip.path }),
+        });
+        const data = await resp.json();
+        setSuggestions(data.suggestions || []);
+      } catch (e) {
+        setSuggestions([]);
+      }
+    };
+    fetchSuggestions();
+  }, [selectedClipId, selectedAssetId]);
 
   const [aiJobs, setAiJobs] = useState<AIJob[]>([]);
 
