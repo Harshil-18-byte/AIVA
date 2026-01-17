@@ -85,12 +85,12 @@ INCLUDE_EXTS = {
     ".ts",
     ".tsx",
     ".js",
-    ".css",
-    ".html",
+    # ".css", # Exclude CSS to save space
+    # ".html", # Exclude HTML
     ".md",
-    ".bat",
-    ".json",
-    ".txt",
+    # ".bat",
+    # ".json", # Exclude JSON
+    # ".txt",
 }
 
 code_header = {
@@ -130,7 +130,16 @@ for root, dirs, files in os.walk(ROOT_DIR):
         # Read content
         try:
             with open(path, "r", encoding="utf-8", errors="ignore") as f:
-                content = f.read()
+                lines = f.readlines()
+
+            MAX_LINES = 150
+            if len(lines) > MAX_LINES:
+                content = (
+                    "".join(lines[:MAX_LINES])
+                    + f"\n\n... (Truncated. Total lines: {len(lines)}) ..."
+                )
+            else:
+                content = "".join(lines)
 
             lang_map = {
                 ".py": "python",
