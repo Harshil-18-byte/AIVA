@@ -1,8 +1,11 @@
 import json
 import os
 
-NOTEBOOK_PATH = r"c:\AIVA\AIVA.ipynb"
-ROOT_DIR = r"c:\AIVA"
+# Get the directory of this script (c:\AIVA\scripts)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+# Root is one level up (c:\AIVA)
+ROOT_DIR = os.path.dirname(SCRIPT_DIR)
+NOTEBOOK_PATH = os.path.join(ROOT_DIR, "AIVA.ipynb")
 
 # 1. Load existing notebook to preserve original content
 with open(NOTEBOOK_PATH, "r", encoding="utf-8") as f:
