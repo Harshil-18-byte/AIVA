@@ -126,9 +126,11 @@ export const PreviewMonitor = React.forwardRef<HTMLVideoElement, PreviewMonitorP
                 filter: `
                     saturate(${(selectedClip.saturation ?? 100) / 100}) 
                     contrast(${(selectedClip.contrast ?? 100) / 100}) 
-                    brightness(${1 + (selectedClip.gain?.r || 0) / 100})
+                    /* Approx Lift (Brightness offset) + Gain (Brightness multiplier) */
+                    brightness(${ ( (selectedClip.lift?.r || 0) * 0.5 ) + (1 + (selectedClip.gain?.r || 0)) })
                     hue-rotate(${(selectedClip.tint || 0)}deg)
-                    ${selectedClip.temperature ? `sepia(${(selectedClip.temperature > 0 ? selectedClip.temperature : 0) / 100})` : ''}
+                    ${selectedClip.temperature ? `sepia(${Math.abs(selectedClip.temperature) / 100})` : ''}
+                    ${selectedClip.gamma ? `contrast(${1 + ((selectedClip.gamma.r || 0) * 0.5)})` : ''} 
                 `,
                 transition: 'transform 0.1s linear, filter 0.2s ease-out',
             }}>
