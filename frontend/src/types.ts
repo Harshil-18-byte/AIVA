@@ -41,6 +41,7 @@ export interface Clip {
   scene?: string;
   take?: string;
   reel?: string;
+  transcription?: string;
 }
 
 export interface Track {

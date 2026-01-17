@@ -24,13 +24,26 @@ export const Inspector: React.FC<InspectorProps> = ({ selectedClip, onUpdateClip
     }
     setIsProcessing(action);
     try {
-      const res = await fetch('http://localhost:8000/apply', {
+      let endpoint = 'http://localhost:8000/apply';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const body: any = { action, file_path: selectedClip.path };
+
+      // Route specific actions to their dedicated endpoints
+      if (action === 'scene_detect') {
+          endpoint = 'http://localhost:8000/ai/scene_detect';
+          // Body is same: { file_path }
+      }
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, file_path: selectedClip.path })
+        body: JSON.stringify(body)
       });
       const data = await res.json();
+      
       if (data.status === 'success' && data.output_file) {
+          // Force UI refresh by adding timestamp query param if path is same, or just rely on backend creating new name
+          // Backend creates new name (e.g. _enhanced), so pure path update is fine.
           onUpdateClip(selectedClip.id, { 
               path: data.output_file,
               name: `AI_${selectedClip.name}`
@@ -217,10 +230,10 @@ export const Inspector: React.FC<InspectorProps> = ({ selectedClip, onUpdateClip
                         <span className="text-[10px] font-black uppercase text-zinc-500 tracking-widest block mb-3">Neural Engine Tools</span>
                         <div className="grid grid-cols-1 gap-2">
                             {[
-                            { id: 'magic_mask', label: 'Magic Mask', sub: 'Object Isolation', icon: <Shield size={16} />, color: 'text-purple-400', bg: 'hover:bg-purple-500/10' },
-                            { id: 'super_scale', label: 'Super Scale', sub: '2x / 4x Upscaling', icon: <Plus size={16} />, color: 'text-blue-400', bg: 'hover:bg-blue-500/10' },
-                            { id: 'smart_relight', label: 'Smart Re-light', sub: 'Virtual Studio', icon: <Sparkles size={16} />, color: 'text-orange-400', bg: 'hover:bg-orange-500/10' },
-                            { id: 'voice_isolation', label: 'Voice Isolation', sub: 'De-noise Audio', icon: <Volume2 size={16} />, color: 'text-green-400', bg: 'hover:bg-green-500/10' },
+                            { id: 'smart_enhance', label: 'Magic Mask', sub: 'Object Isolation', icon: <Shield size={16} />, color: 'text-purple-400', bg: 'hover:bg-purple-500/10' },
+                            { id: 'upscale_ai', label: 'Super Scale', sub: '2x / 4x Upscaling', icon: <Plus size={16} />, color: 'text-blue-400', bg: 'hover:bg-blue-500/10' },
+                            { id: 'color_boost', label: 'Smart Re-light', sub: 'Virtual Studio', icon: <Sparkles size={16} />, color: 'text-orange-400', bg: 'hover:bg-orange-500/10' },
+                            { id: 'enhance_audio', label: 'Voice Isolation', sub: 'De-noise Audio', icon: <Volume2 size={16} />, color: 'text-green-400', bg: 'hover:bg-green-500/10' },
                             { id: 'remove_silence', label: 'Silence Removal', sub: 'Trim Pauses', icon: <Scissors size={16} />, color: 'text-red-400', bg: 'hover:bg-red-500/10' },
                             { id: 'scene_detect', label: 'Scene Detect', sub: 'Auto Cut Points', icon: <Scissors size={16} />, color: 'text-cyan-400', bg: 'hover:bg-cyan-500/10' },
                             ].map(tool => (
@@ -256,8 +269,9 @@ export const Inspector: React.FC<InspectorProps> = ({ selectedClip, onUpdateClip
                                             });
                                             const data = await res.json();
                                             if (data.status === 'success') {
-                                                showToast?.("Captions generated (see console)", 'success');
-                                                console.log("TRANSCRIPT:", data.transcription);
+                                                const text = data.transcription.text || JSON.stringify(data.transcription);
+                                                onUpdateClip(selectedClip.id, { transcription: text });
+                                                showToast?.("Captions attached to clip", 'success');
                                             } else {
                                                 showToast?.("Transcription Failed: " + data.message, 'error');
                                             }
@@ -279,6 +293,18 @@ export const Inspector: React.FC<InspectorProps> = ({ selectedClip, onUpdateClip
                                 </div>
                             </button>
                         </div>
+                        
+                        {selectedClip.transcription && (
+                            <div className="mt-4 p-3 bg-[#0a0a0c] rounded border border-zinc-800 animate-in fade-in slide-in-from-bottom-2">
+                                <h5 className="text-[10px] font-bold text-zinc-500 uppercase mb-2 flex justify-between items-center">
+                                    <span>Transcription</span>
+                                    <span className="text-[9px] bg-zinc-800 px-1 rounded text-zinc-400">EN</span>
+                                </h5>
+                                <p className="text-[11px] text-zinc-300 font-serif leading-relaxed whitespace-pre-wrap h-40 overflow-y-auto custom-scrollbar select-text selection:bg-blue-500/30">
+                                    &quot;{selectedClip.transcription}&quot;
+                                </p>
+                            </div>
+                        )}
                     </div>
                   </div>
                 )}

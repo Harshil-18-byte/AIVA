@@ -347,7 +347,12 @@ def apply(payload: dict):
             width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
             fps = cap.get(cv2.CAP_PROP_FPS)
-            fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+            # Use 'avc1' or 'H264' if available. Fallback to 'mp4v' if needed, but 'avc1' is better for browsers.
+            try:
+                fourcc = cv2.VideoWriter_fourcc(*"avc1")
+            except:
+                fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+
             name, ext = os.path.splitext(input_path)
             output_path = f"{name}_stable{ext}"
             out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
@@ -356,7 +361,6 @@ def apply(payload: dict):
             margin_w = int(width * 0.05)
             margin_h = int(height * 0.05)
 
-            start = cv2.getTickCount()
             while True:
                 ret, frame = cap.read()
                 if not ret:
@@ -366,8 +370,6 @@ def apply(payload: dict):
                 # Resize back
                 stable = cv2.resize(crop, (width, height))
                 out.write(stable)
-                if (cv2.getTickCount() - start) / cv2.getTickFrequency() > 5:
-                    break  # Demo limit
 
             cap.release()
             out.release()
@@ -383,13 +385,15 @@ def apply(payload: dict):
             center_x = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) / 2)
 
             fps = cap.get(cv2.CAP_PROP_FPS)
-            fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+            try:
+                fourcc = cv2.VideoWriter_fourcc(*"avc1")
+            except:
+                fourcc = cv2.VideoWriter_fourcc(*"mp4v")
             name, ext = os.path.splitext(input_path)
             output_path = f"{name}_9x16{ext}"
             # Output is strictly vertical
             out = cv2.VideoWriter(output_path, fourcc, fps, (target_w, h))
 
-            start = cv2.getTickCount()
             while True:
                 ret, frame = cap.read()
                 if not ret:
@@ -403,8 +407,6 @@ def apply(payload: dict):
                     crop = cv2.resize(crop, (target_w, h))
 
                 out.write(crop)
-                if (cv2.getTickCount() - start) / cv2.getTickFrequency() > 5:
-                    break
 
             cap.release()
             out.release()
@@ -432,12 +434,14 @@ def apply(payload: dict):
                 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
                 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
                 fps = cap.get(cv2.CAP_PROP_FPS)
-                fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+                try:
+                    fourcc = cv2.VideoWriter_fourcc(*"avc1")
+                except:
+                    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
                 name, ext = os.path.splitext(input_path)
                 output_path = f"{name}_bright{ext}"
                 out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
-                start_time = cv2.getTickCount()
                 while True:
                     ret, frame = cap.read()
                     if not ret:
@@ -445,8 +449,6 @@ def apply(payload: dict):
                     # Simple brightness increase
                     frame = cv2.convertScaleAbs(frame, alpha=1.2, beta=30)
                     out.write(frame)
-                    if (cv2.getTickCount() - start_time) / cv2.getTickFrequency() > 5:
-                        break
 
                 cap.release()
                 out.release()
@@ -459,12 +461,14 @@ def apply(payload: dict):
             width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
             fps = cap.get(cv2.CAP_PROP_FPS)
-            fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+            try:
+                fourcc = cv2.VideoWriter_fourcc(*"avc1")
+            except:
+                fourcc = cv2.VideoWriter_fourcc(*"mp4v")
             name, ext = os.path.splitext(input_path)
             output_path = f"{name}_enhanced{ext}"
             out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
-            start = cv2.getTickCount()
             while True:
                 ret, frame = cap.read()
                 if not ret:
@@ -478,8 +482,6 @@ def apply(payload: dict):
                 frame = cv2.convertScaleAbs(frame, alpha=1.1, beta=5)
 
                 out.write(frame)
-                if (cv2.getTickCount() - start) / cv2.getTickFrequency() > 5:
-                    break
             cap.release()
             out.release()
 
@@ -492,12 +494,14 @@ def apply(payload: dict):
             width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
             fps = cap.get(cv2.CAP_PROP_FPS)
-            fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+            try:
+                fourcc = cv2.VideoWriter_fourcc(*"avc1")
+            except:
+                fourcc = cv2.VideoWriter_fourcc(*"mp4v")
             name, ext = os.path.splitext(input_path)
             output_path = f"{name}_cine{ext}"
             out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
-            start = cv2.getTickCount()
             while True:
                 ret, frame = cap.read()
                 if not ret:
@@ -520,16 +524,7 @@ def apply(payload: dict):
 
                 frame = cv2.merge((b, g, r))
 
-                # Add cinematic bars? Maybe not for 'grade'.
-
-                # Add Vignette
-                rows, cols = frame.shape[:2]
-                # Create vignette mask
-                # (Skipping complex mask for speed - just saving color shift)
-
                 out.write(frame)
-                if (cv2.getTickCount() - start) / cv2.getTickFrequency() > 5:
-                    break
             cap.release()
             out.release()
 
@@ -541,7 +536,10 @@ def apply(payload: dict):
             width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
             fps = cap.get(cv2.CAP_PROP_FPS)
-            fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+            try:
+                fourcc = cv2.VideoWriter_fourcc(*"avc1")
+            except:
+                fourcc = cv2.VideoWriter_fourcc(*"mp4v")
             name, ext = os.path.splitext(input_path)
             output_path = f"{name}_2x{ext}"
 
@@ -551,7 +549,6 @@ def apply(payload: dict):
 
             out = cv2.VideoWriter(output_path, fourcc, fps, (target_w, target_h))
 
-            start = cv2.getTickCount()
             while True:
                 ret, frame = cap.read()
                 if not ret:
@@ -565,8 +562,6 @@ def apply(payload: dict):
                 upscaled = cv2.addWeighted(upscaled, 1.5, gaussian, -0.5, 0, upscaled)
 
                 out.write(upscaled)
-                if (cv2.getTickCount() - start) / cv2.getTickFrequency() > 5:
-                    break
             cap.release()
             out.release()
 
