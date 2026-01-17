@@ -32,7 +32,7 @@ export default function App() {
   const [activePage, setActivePage] = useState<
     "media" | "cut" | "edit" | "fusion" | "color" | "audio" | "deliver" | "ai_hub"
   >("edit");
-  const [exportPreset, setExportPreset] = useState("Custom");
+
 
   const [assets, setAssets] = useState<Asset[]>([]);
 
@@ -165,11 +165,12 @@ export default function App() {
         });
         const data = await resp.json();
         setSuggestions(data.suggestions || []);
-      } catch (e) {
+      } catch (_) {
         setSuggestions([]);
       }
     };
     fetchSuggestions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedClipId, selectedAssetId]);
 
   const [aiJobs, setAiJobs] = useState<AIJob[]>([]);
@@ -202,7 +203,7 @@ export default function App() {
               const saveData = await saveRes.json();
               showToast(saveData.status === 'success' ? "Project Saved Successfully" : "Save Failed", saveData.status === 'success' ? 'success' : 'error');
           }
-      } catch (e) { showToast("Save Error", "error"); }
+      } catch (_) { showToast("Save Error", "error"); }
   };
 
 
@@ -278,7 +279,7 @@ export default function App() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'cut_clip', file_path: (targetClip as Clip).path, params: { timestamp: pos / 100 } })
         });
-      } catch (e) {}
+      } catch { /* ignore */ }
     }
   };
 
@@ -325,7 +326,7 @@ export default function App() {
                    updateAIJob(jobId, { status: 'failed' });
                    showToast("Silence removal failed", "error");
                 }
-             }).catch(e => {
+             }).catch(() => {
                 updateAIJob(jobId, { status: 'failed' });
                 showToast("Silence removal error", "error");
              });
@@ -428,7 +429,7 @@ export default function App() {
                          updateAIJob(jobId, { status: 'failed' });
                          showToast("Failed to apply suggestion", "error");
                      }
-                 }).catch(e => { 
+                 }).catch(() => { 
                      updateAIJob(jobId, { status: 'failed' });
                      showToast("Error applying suggestion", "error"); 
                  });
@@ -702,6 +703,7 @@ export default function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying, selectedClipId]);
 
 

@@ -228,3 +228,4 @@ export const PreviewMonitor = React.forwardRef<HTMLVideoElement, PreviewMonitorP
     </div>
   );
 });
+PreviewMonitor.displayName = 'PreviewMonitor';

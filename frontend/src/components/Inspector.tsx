@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
-  Sliders, Wand2, Activity, VolumeX, FileText, Plus, Shield, Sparkles, 
-  Palette, Music, Video, Target, Filter, Volume2, Move, Scissors, Loader2, ArrowRight
+  Sliders, Wand2, FileText, Plus, Shield, Sparkles, 
+  Palette, Music, Video, Target, Volume2, Scissors, Loader2, ArrowRight
 } from 'lucide-react';
 
 import { Clip } from '../types';
@@ -44,7 +44,7 @@ export const Inspector: React.FC<InspectorProps> = ({ selectedClip, onUpdateClip
       } else {
           showToast?.(data.message || "Action completed", data.status === 'success' ? 'success' : 'error');
       }
-    } catch (e) {
+    } catch {
       showToast?.("Backend error. Is api.py running?", "error");
     } finally {
       setIsProcessing(null);
@@ -74,7 +74,7 @@ export const Inspector: React.FC<InspectorProps> = ({ selectedClip, onUpdateClip
        } else {
            showToast?.("Effect failed", 'error');
        }
-     } catch (e) {
+     } catch {
          showToast?.("Effect error", 'error');
      } finally {
          setIsProcessing(null);
@@ -261,7 +261,7 @@ export const Inspector: React.FC<InspectorProps> = ({ selectedClip, onUpdateClip
                                             } else {
                                                 showToast?.("Transcription Failed: " + data.message, 'error');
                                             }
-                                    } catch(e) { showToast?.("Transcription Error", "error"); }
+                                    } catch { showToast?.("Transcription Error", "error"); }
                                     setIsProcessing(null);
                                 }}
                                 disabled={isProcessing !== null}

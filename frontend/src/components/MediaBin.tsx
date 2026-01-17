@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Film, Music, Image as ImageIcon, Search, Grip, List, Zap, Layers, Sparkles, Plus, Trash2 } from 'lucide-react';
+import { Film, Music, Search, Grip, List, Zap, Sparkles, Plus, Trash2 } from 'lucide-react';
 
 import { Asset } from '../types';
 
@@ -255,3 +255,4 @@ export const MediaBin = React.memo((props: MediaBinProps) => {
     </div>
   );
 });
+MediaBin.displayName = 'MediaBin';

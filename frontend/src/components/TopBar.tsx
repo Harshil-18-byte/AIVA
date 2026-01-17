@@ -6,9 +6,7 @@ import {
   HelpCircle, 
   Download,
   Upload,
-  ChevronDown,
   Wand2,
-  Scissors,
   VolumeX,
   Plus,
   Monitor,
@@ -87,7 +85,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onSettingsClick, onImportClick, 
       } else {
         showToast?.(`Error: ${data.message}`, 'error');
       }
-    } catch (e) {
+    } catch {
       showToast?.("Failed to reach AI engine.", "error");
     }
   };
@@ -233,7 +231,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onSettingsClick, onImportClick, 
                 placeholder="Name"
              />
         </div>
-        <VoiceControl onCommand={onVoiceCommand} showToast={showToast || ((m,t)=>console.log(m))} wakeWord={wakeWord} />
+        <VoiceControl onCommand={onVoiceCommand} showToast={showToast || ((m)=>console.log(m))} wakeWord={wakeWord} />
         <div className="w-[1px] h-6 bg-[#2c2c30] mx-2"></div>
         <button className="btn-icon" title="Settings" onClick={onSettingsClick}>
           <Settings size={18} />

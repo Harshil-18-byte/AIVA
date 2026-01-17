@@ -17,6 +17,7 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ videoRef, widt
 
     // Initialize Audio Context
     if (!audioContextRef.current) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
     const ctx = audioContextRef.current; // variable name 'ctx' clashes within render loop, let's keep it here

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, Monitor, Cpu, Folder, Radio, Keyboard, Sliders, Volume2, Film, Layers } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Monitor, Cpu, Folder, Keyboard, Volume2, Layers } from 'lucide-react';
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -45,8 +45,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showToast
     if (saved) {
       try {
         return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
-      } catch (e) {
-        console.error("Failed to parse settings", e);
+      } catch {
+        console.error("Failed to parse settings");
       }
     }
     return DEFAULT_SETTINGS;
@@ -431,7 +431,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showToast
                                 if (data.status === 'success' && data.path) {
                                   updateSetting('cacheLocation', data.path);
                                 }
-                              } catch (e) {
+                              } catch {
                                 alert("Failed to open folder picker. Ensure backend is running.");
                               }
                             }}
@@ -473,7 +473,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showToast
                            } else {
                              showToast?.(data.message, 'error');
                            }
-                         } catch (e) {
+                         } catch {
                            showToast?.("Failed to clean cache", 'error');
                          }
                        }}

@@ -43,11 +43,11 @@ const TimelineClip = React.memo(({ clip, trackId, selectedClipId, onMouseDown }:
     <div className="px-2 py-1 text-[9px] text-white truncate font-bold uppercase tracking-tighter opacity-90 pointer-events-none">{clip.name}</div>
   </div>
 ));
+TimelineClip.displayName = 'TimelineClip';
 
-const TrackRow = React.memo(({ track, type, index, trackState, selectedClipId, onDrop, onMouseDown }: { 
+const TrackRow = React.memo(({ track, type, trackState, selectedClipId, onDrop, onMouseDown }: { 
     track: Track, 
     type: 'v'|'a', 
-    index: number, 
     trackState: { hidden?: boolean, locked?: boolean, muted?: boolean }, 
     selectedClipId: string|null, 
     onDrop: (e: React.DragEvent, trackId: string, type: 'v' | 'a') => void, 
@@ -64,6 +64,7 @@ const TrackRow = React.memo(({ track, type, index, trackState, selectedClipId, o
     </div>
   );
 });
+TrackRow.displayName = 'TrackRow';
 
 export const Timeline: React.FC<TimelineProps> = ({ 
     videoTracks, setVideoTracks, 
@@ -71,7 +72,7 @@ export const Timeline: React.FC<TimelineProps> = ({
     selectedClipId, setSelectedClipId,
     setSelectedAssetId,
     playheadPos, setPlayheadPos,
-    isPlaying, setIsPlaying,
+    // isPlaying, setIsPlaying,
     suggestions,
     onAddVideoTrack,
     onAddAudioTrack,
@@ -156,12 +157,7 @@ export const Timeline: React.FC<TimelineProps> = ({
       }
   }, [setSelectedClipId, setSelectedAssetId, tool, onSplit, setPlayheadPos]);
 
-  const findFirstGap = (trackId: string, type: 'v' | 'a') => {
-    const tracks = type === 'v' ? videoTracks : audioTracks;
-    const track = tracks.find(t => t.id === trackId);
-    if (!track || track.clips.length === 0) return 0;
-    return Math.max(...track.clips.map(c => c.start + c.width));
-  };
+
 
   const handleDrop = React.useCallback((e: React.DragEvent, trackId: string, trackType: 'v' | 'a') => {
     e.preventDefault();
@@ -334,12 +330,11 @@ export const Timeline: React.FC<TimelineProps> = ({
                  )), [markers])}
                </div>
 
-              {videoTracks.map((track, i) => (
+              {videoTracks.map((track) => (
                 <TrackRow 
                     key={track.id} 
                     track={track} 
                     type="v" 
-                    index={i} 
                     trackState={trackStates[track.id]} 
                     selectedClipId={selectedClipId} 
                     onDrop={handleDrop} 
@@ -347,12 +342,11 @@ export const Timeline: React.FC<TimelineProps> = ({
                 />
               ))}
               <div className="h-4 bg-[#0a0a0c]"></div>
-              {audioTracks.map((track, i) => (
+              {audioTracks.map((track) => (
                 <TrackRow 
                     key={track.id} 
                     track={track} 
                     type="a" 
-                    index={i} 
                     trackState={trackStates[track.id]} 
                     selectedClipId={selectedClipId} 
                     onDrop={handleDrop} 
@@ -397,7 +391,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                                 setAudioTracks(nextA);
                              }
                              showToast?.(`Applied: ${s.title}`, 'success');
-                           } catch (e) { showToast?.("Failed to apply suggestion.", "error"); }
+                           } catch { showToast?.("Failed to apply suggestion.", "error"); }
                         };
                        runAction();
                       }}

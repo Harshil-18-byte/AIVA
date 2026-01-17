@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader2, CheckCircle2, XCircle, FileText, Film, Volume2, Wand2, Download } from 'lucide-react';
+import { Loader2, CheckCircle2, XCircle, Film, Volume2, Wand2, Download } from 'lucide-react';
 
 export interface AIJob {
   id: string;
@@ -55,7 +55,7 @@ export const AIStatusPanel: React.FC<AIStatusPanelProps> = ({ jobs, onImportAsse
                               {job.type === 'transcribe' ? (
                                   <div className="max-h-24 overflow-y-auto custom-scrollbar">
                                       <p className="text-[9px] text-zinc-300 font-serif leading-relaxed italic">
-                                          "{typeof job.result === 'object' ? job.result.text : job.result}"
+                                          &quot;{typeof job.result === 'object' ? job.result.text : job.result}&quot;
                                       </p>
                                   </div>
                               ) : (
