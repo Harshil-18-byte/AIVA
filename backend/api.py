@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import filedialog
 import os
 import shutil
+import time
 
 from backend.voice.whisper_engine import transcribe, transcribe_file
 from backend.voice.intent import parse_intent, confidence_score
@@ -276,7 +277,7 @@ def apply(payload: dict):
             effect_type = payload.get("context", {}).get("effect", "robot")
             # Create new filename
             name, ext = os.path.splitext(input_path)
-            output_path = f"{name}_{effect_type}{ext}"
+            output_path = f"{name}_{effect_type}_{int(time.time())}{ext}"
             apply_effect(input_path, output_path, effect_type)
 
         elif action == "remove_silence":
@@ -310,8 +311,12 @@ def apply(payload: dict):
 
             clean_data = data[keep_mask]
 
+            clean_data = data[keep_mask]
+
             name, ext = os.path.splitext(input_path)
-            output_path = f"{name}_nosilence{ext}"
+            output_path = f"{name}_nosilence_{int(time.time())}{ext}"
+            # Ensure folder exists
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
             sf.write(output_path, clean_data, sr)
 
         elif action == "enhance_audio":
@@ -335,7 +340,7 @@ def apply(payload: dict):
                 clean_data = clean_data / max_val * 0.95
 
             name, ext = os.path.splitext(input_path)
-            output_path = f"{name}_enhanced{ext}"
+            output_path = f"{name}_enhanced_{int(time.time())}{ext}"
             sf.write(output_path, clean_data, sr)
 
         elif action == "stabilize_video":
@@ -354,7 +359,7 @@ def apply(payload: dict):
                 fourcc = cv2.VideoWriter_fourcc(*"mp4v")
 
             name, ext = os.path.splitext(input_path)
-            output_path = f"{name}_stable{ext}"
+            output_path = f"{name}_stable_{int(time.time())}{ext}"
             out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
             # Pass-through with 5% crop to simulate "stabilization zoom"
@@ -390,7 +395,7 @@ def apply(payload: dict):
             except:
                 fourcc = cv2.VideoWriter_fourcc(*"mp4v")
             name, ext = os.path.splitext(input_path)
-            output_path = f"{name}_9x16{ext}"
+            output_path = f"{name}_9x16_{int(time.time())}{ext}"
             # Output is strictly vertical
             out = cv2.VideoWriter(output_path, fourcc, fps, (target_w, h))
 
@@ -411,18 +416,20 @@ def apply(payload: dict):
             cap.release()
             out.release()
 
-        elif action in ["normalize_audio", "reduce_gain"]:
+        elif action in ["normalize_audio", "reduce_gain", "audio_normalize"]:
             # Real implementation: Simple gain adjustment
             import soundfile as sf
 
             data, sr = sf.read(input_path)
             # Normalize to -1.0 to 1.0 or reduce
-            target_peak = 0.9 if action == "normalize_audio" else 0.5
+            target_peak = (
+                0.9 if action in ["normalize_audio", "audio_normalize"] else 0.5
+            )
             current_peak = np.max(np.abs(data))
             if current_peak > 0:
                 data = data * (target_peak / current_peak)
                 name, ext = os.path.splitext(input_path)
-                output_path = f"{name}_norm{ext}"
+                output_path = f"{name}_norm_{int(time.time())}{ext}"
                 sf.write(output_path, data, sr)
 
         elif action == "color_boost":
@@ -439,7 +446,7 @@ def apply(payload: dict):
                 except:
                     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
                 name, ext = os.path.splitext(input_path)
-                output_path = f"{name}_bright{ext}"
+                output_path = f"{name}_bright_{int(time.time())}{ext}"
                 out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
                 while True:
@@ -466,7 +473,7 @@ def apply(payload: dict):
             except:
                 fourcc = cv2.VideoWriter_fourcc(*"mp4v")
             name, ext = os.path.splitext(input_path)
-            output_path = f"{name}_enhanced{ext}"
+            output_path = f"{name}_enhanced_{int(time.time())}{ext}"
             out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
             while True:
@@ -499,7 +506,7 @@ def apply(payload: dict):
             except:
                 fourcc = cv2.VideoWriter_fourcc(*"mp4v")
             name, ext = os.path.splitext(input_path)
-            output_path = f"{name}_cine{ext}"
+            output_path = f"{name}_cine_{int(time.time())}{ext}"
             out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
             while True:
@@ -541,7 +548,7 @@ def apply(payload: dict):
             except:
                 fourcc = cv2.VideoWriter_fourcc(*"mp4v")
             name, ext = os.path.splitext(input_path)
-            output_path = f"{name}_2x{ext}"
+            output_path = f"{name}_2x_{int(time.time())}{ext}"
 
             # Target 2x
             target_w = width * 2
